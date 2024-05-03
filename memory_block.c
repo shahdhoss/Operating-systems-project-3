@@ -82,6 +82,19 @@ void insert (struct head* block) {
 	}
 	flist=block;
 }
+struct head* merge(struct head* block) {
+	if (block->bfree) {
+		struct head* before = block->prev;
+		block->size = block->size + before->size;
+		block->bfree = FALSE;
+		block->bsize = 0;
+	}
+	if (aft->free) {
+		struct head* aft = after(block);
+		block->size = block->size + aft->size;
+	}
+	return block;
+}
 /*int main() {
     struct head *block1 = malloc(sizeof(struct head));
     struct head *block2 = malloc(sizeof(struct head));
