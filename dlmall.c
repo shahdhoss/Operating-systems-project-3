@@ -1,46 +1,29 @@
 #include "dlmall.h"
 int adjust(size_t request){
-	int blocks=request % ALIGN;
-	if(blocks==round(blocks)){
-		return blocks;
-	}
-	return ceil(blocks);
+	double blocks=request / ALIGN;
+	return (int)blocks+1;
 }
-struct  head* find(int size){
-	//printf("im herre\n");
+struct head* find(int size){
 	int blocks=adjust(size);
+	printf("This is the no. of blocks: %d \n",blocks);
 	if(flist==NULL){
-		//printf("flist is null\n");
+		printf("flist is null\n");
 		return NULL;
 	}
 	struct head* ptr=flist;
-	struct head* block=flist;
+	struct head* block=ptr;
 	block->size=0;
-	while(ptr->next!=NULL){
-		if(blocks!=0){
-			blocks--;
-			if(ptr->size <= size){
-				block->size=block->size+ptr->size;
-				size = size - ptr->size;
-			}
-			else if (ptr->size > size && size!=0){
-				struct head* splt=split(ptr,size);
-				block->size=block->size+splt->size;
-			}
-		}
-	}
+	flist=split(block,size);
+	detach(block);
 	return block;
 }
 void *dalloc(size_t request){
-	//printf("im herre\n");
 	if(request<=0){
-		//printf("request is zero \n");
 		return NULL;
 	}
 	int size = adjust(request);
 	struct head *taken = find(size);
 	if(taken==NULL){
-		//printf("taken is null \n");
 		return NULL;
 	}
 	else
@@ -52,6 +35,7 @@ void dfree(void *memory){
 		struct head *aft=(struct head*)((char*)memory + block->size);
 		block->free=TRUE;
 		aft->bfree=TRUE;
+		insert(memory);
 	}
 	return;
 }

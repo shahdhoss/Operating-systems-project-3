@@ -24,19 +24,20 @@ struct head {
 #define HIDE(block) ((void*)((struct head*)(block) + 1))
 #define ALIGN 8
 #define ARENA (64 * 1024)
-
+#define order 64
 struct head* after(struct head *block) {
-    return (struct head*) (char*) (block->size + HEAD);
+    return (struct head*) (((char*) block) + block->size);
 }
 struct head* before (struct head *block){    
-	return (struct head*) (char*) (block->size + HEAD);
+	return (struct head*) (((char*)block) - block->size);
 }
 struct head* split (struct head* block, int size){
-	int rsize = block->size - (size+ HEAD);
+	printf("size: %d\n", block->size - (size+HEAD));
+	int rsize = block->size - (size+HEAD);
 	block->size =rsize;
-	struct head *splt = (char*) block->size+HEAD; 
-	splt->bsize =rsize;
-	splt->bfree= FALSE;
+	struct head *splt = (struct head*)((char*)block + HEAD + rsize); //might be an issue here 
+	splt->bsize = rsize;
+	splt->bfree = FALSE;
 	splt->free = TRUE;
 	splt->size = size;
 	struct head *aft= after(splt);
@@ -49,9 +50,7 @@ struct head *new(){
 		printf("one arena already allocated\n");
 		return NULL;
 	}
-	//printf("before the mmap\n");
 	struct head *new = mmap(NULL,ARENA,PROT_READ| PROT_WRITE,MAP_PRIVATE|MAP_ANON,-1,0);
-	//printf("after the mmap\n");
 	if(new==MAP_FAILED){
 		printf("mmap failed: error %d\n",errno);
 		return NULL;
@@ -61,25 +60,26 @@ struct head *new(){
 	new->bsize = 0;
 	new->free = TRUE;
 	new->size = size;
-	/*struct head* sentinel = after(new);
+	struct head* sentinel = after(new); 
 	sentinel->bfree = FALSE;
 	sentinel->bsize= size;
 	sentinel->free=FALSE;
-	sentinel->size= 0;*/
+	sentinel->size= 0;
 	arena = (struct head*)new;
-	//printf("right before the return\n");
 	return arena;
 }
-struct head* flist;
+struct block{
+	int size;
+	struct block* next;
+	struct block* prev;
+};
+struct head *flist;
 void detach(struct head *block) {
     if (block->next != NULL) {
     	if(block->prev!=NULL){
-        	block->prev->next = block->prev;
+        	block->prev->next = block->next;
     	}
-    	else{
-    		flist=block->next;
-    	}
-    }
+	}
 }
 void insert (struct head* block) {
 	if(flist!=NULL){
@@ -100,14 +100,4 @@ struct head* merge(struct head* block) {
 	}
 	return block;
 }
-/*int main() {
-    struct head *block1 = malloc(sizeof(struct head));
-    struct head *block2 = malloc(sizeof(struct head));
-    insert(block1);
-    insert(block2);
-    detach(block1);
-    free(block1);
-    free(block2);
-    return 0;
-}*/
 
