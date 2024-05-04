@@ -5,14 +5,12 @@ int adjust(size_t request){
 }
 struct head* find(int size){
 	int blocks=adjust(size);
-	printf("This is the no. of blocks: %d \n",blocks);
 	if(flist==NULL){
 		printf("flist is null\n");
 		return NULL;
 	}
 	struct head* ptr=flist;
 	struct head* block=ptr;
-	block->size=0;
 	flist=split(block,size);
 	detach(block);
 	return block;

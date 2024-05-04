@@ -32,7 +32,6 @@ struct head* before (struct head *block){
 	return (struct head*) (((char*)block) - block->size);
 }
 struct head* split (struct head* block, int size){
-	printf("size: %d\n", block->size - (size+HEAD));
 	int rsize = block->size - (size+HEAD);
 	block->size =rsize;
 	struct head *splt = (struct head*)((char*)block + HEAD + rsize); //might be an issue here 
