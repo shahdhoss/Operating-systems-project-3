@@ -7,8 +7,10 @@ int adjust(size_t request){
 	return ceil(blocks);
 }
 struct  head* find(int size){
+	//printf("im herre\n");
 	int blocks=adjust(size);
 	if(flist==NULL){
+		//printf("flist is null\n");
 		return NULL;
 	}
 	struct head* ptr=flist;
@@ -30,13 +32,17 @@ struct  head* find(int size){
 	return block;
 }
 void *dalloc(size_t request){
+	//printf("im herre\n");
 	if(request<=0){
+		//printf("request is zero \n");
 		return NULL;
 	}
 	int size = adjust(request);
 	struct head *taken = find(size);
-	if(taken==NULL)
+	if(taken==NULL){
+		//printf("taken is null \n");
 		return NULL;
+	}
 	else
 		return taken;
 }
